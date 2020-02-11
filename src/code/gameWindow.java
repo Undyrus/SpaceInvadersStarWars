@@ -58,7 +58,7 @@ public class gameWindow extends javax.swing.JFrame {
         initComponents();
         
         try {
-            template = ImageIO.read(getClass().getResource("/img/xWing1.png"));
+            template = ImageIO.read(getClass().getResource("/img/xWing2.png"));
         } catch (IOException ex) {
         }
         for (int i=0; i<5; i++){
@@ -84,7 +84,7 @@ public class gameWindow extends javax.swing.JFrame {
             for (int j = 0; j < xWingColumns; j++) {
                 xWingList[i][j] = new xWing(SCREENWIDTH);
                 xWingList[i][j].image1 = img[0];
-                xWingList[i][j].image2 = img[0];
+                xWingList[i][j].image2 = img[1];
                 xWingList[i][j].posX = j * (xWingGapX + xWingList[i][j].image1.getWidth(null));
                 xWingList[i][j].posY = i * (xWingGapY + xWingList[i][j].image1.getHeight(null));
             }
