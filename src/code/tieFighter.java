@@ -18,10 +18,6 @@ public class tieFighter {
     
 
     public tieFighter() {
-        try {
-            image = ImageIO.read(getClass().getResource("/img/nave.png"));
-        } catch (Exception e) {
-        }
     }
     
     public void move(){

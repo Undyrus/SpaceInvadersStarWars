@@ -23,11 +23,11 @@ import javax.swing.Timer;
  */
 public class gameWindow extends javax.swing.JFrame {
 
-    static int SCREENWIDTH = 800;
-    static int SCREENHEIGHT = 600;
+    static int SCREENWIDTH = 1300;
+    static int SCREENHEIGHT = 860;
 
-    int xWingRows = 5;
-    int xWingColumns = 10;
+    int xWingRows = 4;
+    int xWingColumns = 9;
 
     int xWingGapX = 15;//separacion en la misma fila
     int xWingGapY = 10;//separacion entre filas de marcianos
@@ -58,25 +58,33 @@ public class gameWindow extends javax.swing.JFrame {
         initComponents();
         
         try {
-            template = ImageIO.read(getClass().getResource("/img/invaders2.png"));
+            template = ImageIO.read(getClass().getResource("/img/xWing1.png"));
         } catch (IOException ex) {
         }
         for (int i=0; i<5; i++){
             for(int j=0; j<4; j++){
-                img[i*4+j] = template.getSubimage(j*64, i*64, 64, 64).getScaledInstance(32, 32, Image.SCALE_SMOOTH);
+                img[i*4+j] = template.getSubimage(j*64, i*64, 64, 64).getScaledInstance(96, 96, Image.SCALE_SMOOTH);
             }
         }
+        
+        img[20] = template.getSubimage(0, 320, 66, 32);
+        img[21] = template.getSubimage(66, 320, 64, 32);
+        
         setSize(SCREENWIDTH, SCREENHEIGHT);
         buffer = (BufferedImage) jPanel1.createImage(SCREENWIDTH, SCREENHEIGHT);
         buffer.createGraphics();
+        
+        
         timer.start();// arranco el temporizador para que empiece el juego
+        
+        myTieFighter.image = img[21];
         myTieFighter.posX = SCREENWIDTH / 2 - myTieFighter.image.getWidth(this) / 2;
         myTieFighter.posY = SCREENHEIGHT - 90;
         for (int i = 0; i < xWingRows; i++) {
             for (int j = 0; j < xWingColumns; j++) {
                 xWingList[i][j] = new xWing(SCREENWIDTH);
                 xWingList[i][j].image1 = img[0];
-                xWingList[i][j].image2 = img[1];
+                xWingList[i][j].image2 = img[0];
                 xWingList[i][j].posX = j * (xWingGapX + xWingList[i][j].image1.getWidth(null));
                 xWingList[i][j].posY = i * (xWingGapY + xWingList[i][j].image1.getHeight(null));
             }
@@ -128,11 +136,11 @@ public class gameWindow extends javax.swing.JFrame {
         for (int i = 0; i < xWingRows; i++) {
             for (int j = 0; j < xWingColumns; j++) {
                 xWingList[i][j].move(xWingDirection);
-                if (xWingList[i][j].posX > SCREENWIDTH - xWingList[i][j].image1.getWidth(null)
+                if (xWingList[i][j].posX > SCREENWIDTH - 5 - xWingList[i][j].image1.getWidth(null)
                         || xWingList[i][j].posX <= 0) {
                     xWingDirection = !xWingDirection;
                     for(int k=0; k<xWingRows;k++){
-                        for(int m=0;m<xWingColumns;m++){
+                        for(int m=0; m<xWingColumns; m++){
                             xWingList[k][m].posY += xWingList[k][m].image1.getHeight(null);
                         }
                     } 
@@ -160,6 +168,8 @@ public class gameWindow extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setFocusCycleRoot(false);
+        setResizable(false);
         addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 formKeyPressed(evt);
