@@ -19,7 +19,7 @@ import javax.swing.Timer;
 
 /**
  *
- * @author jorgecisneros
+ * @author Ramiro Diego
  */
 public class gameWindow extends javax.swing.JFrame {
 
