@@ -14,6 +14,7 @@ import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.Timer;
 
@@ -51,32 +52,33 @@ public class gameWindow extends javax.swing.JFrame {
     xWing myXwing = new xWing(SCREENWIDTH);
     xWing[][] xWingList = new xWing[xWingRows][xWingColumns];
     boolean xWingDirection = false; //false se move hacia la dcha, true hacia la izq
+    
     tieFighter myTieFighter = new tieFighter();
     Blast myBlast = new Blast();
+    ArrayList<Blast> blastList = new ArrayList(); 
 
     public gameWindow() {
         initComponents();
-        
+
         try {
             template = ImageIO.read(getClass().getResource("/img/xWing2.png"));
         } catch (IOException ex) {
         }
-        for (int i=0; i<5; i++){
-            for(int j=0; j<4; j++){
-                img[i*4+j] = template.getSubimage(j*64, i*64, 64, 64).getScaledInstance(96, 96, Image.SCALE_SMOOTH);
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 4; j++) {
+                img[i * 4 + j] = template.getSubimage(j * 64, i * 64, 64, 64).getScaledInstance(96, 96, Image.SCALE_SMOOTH);
             }
         }
-        
+
         img[20] = template.getSubimage(0, 320, 66, 32);
         img[21] = template.getSubimage(66, 320, 64, 32);
-        
+
         setSize(SCREENWIDTH, SCREENHEIGHT);
         buffer = (BufferedImage) jPanel1.createImage(SCREENWIDTH, SCREENHEIGHT);
         buffer.createGraphics();
-        
-        
+
         timer.start();// arranco el temporizador para que empiece el juego
-        
+
         myTieFighter.image = img[21];
         myTieFighter.posX = SCREENWIDTH / 2 - myTieFighter.image.getWidth(this) / 2;
         myTieFighter.posY = SCREENHEIGHT - 90;
@@ -90,7 +92,20 @@ public class gameWindow extends javax.swing.JFrame {
             }
         }
     }
-
+    
+    private void paintBlast(Graphics2D g2){
+        Blast auxBlast;
+        for(int i=0;i<blastList.size();i++){
+            auxBlast = blastList.get(i);
+            auxBlast.move();
+            if(auxBlast.posY<0){
+                blastList.remove(i);
+            }else{
+            g2.drawImage(auxBlast.image, auxBlast.posX, auxBlast.posY, null);
+            }
+        }
+    }
+    
     private void gameLoop() {
         //este metodo gobierna el redibujado de los objetos en el jPanel1
         //primero borro todo lo que hay en el buffer
@@ -101,9 +116,9 @@ public class gameWindow extends javax.swing.JFrame {
         printXwing(g2);
         /////////////////////////////////////////////////////////////////
         g2.drawImage(myTieFighter.image, myTieFighter.posX, myTieFighter.posY, null);//dibujo nave
-        g2.drawImage(myBlast.image, myBlast.posX, myBlast.posY, null);
+       
         myTieFighter.move();
-        myBlast.move();
+        paintBlast(g2);
         checkCollision();
 
         /////////////////////////////////////////////////////////////////
@@ -112,26 +127,26 @@ public class gameWindow extends javax.swing.JFrame {
         g2.drawImage(buffer, 0, 0, null);
 
     }
-    private void checkCollision(){
+
+    private void checkCollision() {
         Rectangle2D.Double alienRectangle = new Rectangle2D.Double();
         Rectangle2D.Double blasterRectangle = new Rectangle2D.Double();
-        
+
         blasterRectangle.setFrame(myBlast.posX, myBlast.posY, myBlast.image.getWidth(null), myBlast.image.getHeight(null));
-        
-        for(int i=0; i<xWingRows; i++){
-            for(int j=0;j<xWingColumns;j++){
+
+        for (int i = 0; i < xWingRows; i++) {
+            for (int j = 0; j < xWingColumns; j++) {
                 alienRectangle.setFrame(xWingList[i][j].posX, xWingList[i][j].posY,
-                                        xWingList[i][j].image1.getWidth(null),
-                                        xWingList[i][j].image1.getWidth(null));
-                if(blasterRectangle.intersects(alienRectangle)){
+                        xWingList[i][j].image1.getWidth(null),
+                        xWingList[i][j].image1.getWidth(null));
+                if (blasterRectangle.intersects(alienRectangle)) {
                     xWingList[i][j].posY = 2000;
                     myBlast.posY = -2000;
-
                 }
             }
         }
     }
-    
+
     public void printXwing(Graphics2D _g2) {
         for (int i = 0; i < xWingRows; i++) {
             for (int j = 0; j < xWingColumns; j++) {
@@ -139,11 +154,11 @@ public class gameWindow extends javax.swing.JFrame {
                 if (xWingList[i][j].posX > SCREENWIDTH - 5 - xWingList[i][j].image1.getWidth(null)
                         || xWingList[i][j].posX <= 0) {
                     xWingDirection = !xWingDirection;
-                    for(int k=0; k<xWingRows;k++){
-                        for(int m=0; m<xWingColumns; m++){
+                    for (int k = 0; k < xWingRows; k++) {
+                        for (int m = 0; m < xWingColumns; m++) {
                             xWingList[k][m].posY += xWingList[k][m].image1.getHeight(null);
                         }
-                    } 
+                    }
                 }
                 if (counter < 50) {
                     _g2.drawImage(xWingList[i][j].image1, xWingList[i][j].posX, xWingList[i][j].posY, null);
@@ -215,11 +230,12 @@ public class gameWindow extends javax.swing.JFrame {
                 myTieFighter.setRightPressed(true);
                 break;
             case KeyEvent.VK_SPACE:
-                myBlast.blastPosition(myTieFighter);
+                Blast b = new Blast();
+                b.blastPosition(myTieFighter);
+                //agregamos el disparo a la lista de disparos
+                blastList.add(b);
                 break;
-
         }
-                                   
     }//GEN-LAST:event_formKeyPressed
 
     private void formKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyReleased
