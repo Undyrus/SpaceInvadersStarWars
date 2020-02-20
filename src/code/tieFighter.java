@@ -21,10 +21,10 @@ public class tieFighter {
     }
     
     public void move(){
-        if(leftPressed && posX > 0){
+        if(leftPressed && posX > -13){
             posX -= 6;
         }
-        if(rightPressed && posX < (gameWindow.SCREENWIDTH - image.getWidth(null))){
+        if(rightPressed && posX < (gameWindow.SCREENWIDTH - image.getWidth(null)+1)){
             posX += 6;
         }
     }

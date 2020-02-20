@@ -15,6 +15,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import javafx.scene.input.KeyCode;
 import javax.imageio.ImageIO;
 import javax.swing.Timer;
 
@@ -34,6 +35,8 @@ public class gameWindow extends javax.swing.JFrame {
     int xWingGapY = 10;//separacion entre filas de marcianos
 
     int counter = 0;
+    
+    boolean keyReleased = true;
 
     BufferedImage buffer = null;
     BufferedImage template = null;
@@ -104,6 +107,7 @@ public class gameWindow extends javax.swing.JFrame {
             if (auxBlast.posY < 0) {
                 blastList.remove(i);
             } else {
+                
                 g2.drawImage(auxBlast.image, auxBlast.posX, auxBlast.posY, null);
             }
         }
@@ -253,19 +257,22 @@ public class gameWindow extends javax.swing.JFrame {
 
     private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
         switch (evt.getKeyCode()) {
-            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_LEFT:  
                 myTieFighter.setLeftPressed(true);
                 break;
             case KeyEvent.VK_RIGHT:
                 myTieFighter.setRightPressed(true);
                 break;
             case KeyEvent.VK_SPACE:
+                if(keyReleased==true){
                 Blast b = new Blast();
                 b.blastPosition(myTieFighter);
                 //agregamos el disparo a la lista de disparos
                 blastList.add(b);
-                
+                keyReleased=false;
+                }
                 break;
+                
         }
     }//GEN-LAST:event_formKeyPressed
 
@@ -277,6 +284,9 @@ public class gameWindow extends javax.swing.JFrame {
             case KeyEvent.VK_RIGHT:
                 myTieFighter.setRightPressed(false);
                 break;
+             case KeyEvent.VK_SPACE:
+                keyReleased=true;
+                break; 
         }
     }//GEN-LAST:event_formKeyReleased
 
