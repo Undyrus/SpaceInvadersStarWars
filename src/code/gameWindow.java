@@ -15,7 +15,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
-import javafx.scene.input.KeyCode;
 import javax.imageio.ImageIO;
 import javax.swing.Timer;
 
@@ -35,8 +34,11 @@ public class gameWindow extends javax.swing.JFrame {
     int xWingGapY = 10;//separacion entre filas de marcianos
 
     int counter = 0;
-    
+
+    int destroyedShips = 0;
     boolean keyReleased = true;
+
+    Graphics2D g2;
 
     BufferedImage buffer = null;
     BufferedImage template = null;
@@ -99,6 +101,15 @@ public class gameWindow extends javax.swing.JFrame {
         }
     }
 
+    public class blastSound extends Thread {//Creamos un hilo para que  												
+
+        public void run() {                     //reproduzca el sonido a la  vez
+            playSound s = new playSound(); //que sigue el juego
+//            s.ReproducirSonido(s.getClass().getResource("/sonidos/disparosXBOX.wav").getFile());
+            s.playSound(s.getClass().getResource("/sound/blast.wav").getFile());
+        }
+    }
+
     private void paintBlast(Graphics2D g2) {
         Blast auxBlast;
         for (int i = 0; i < blastList.size(); i++) {
@@ -107,7 +118,7 @@ public class gameWindow extends javax.swing.JFrame {
             if (auxBlast.posY < 0) {
                 blastList.remove(i);
             } else {
-                
+
                 g2.drawImage(auxBlast.image, auxBlast.posX, auxBlast.posY, null);
             }
         }
@@ -132,7 +143,7 @@ public class gameWindow extends javax.swing.JFrame {
     private void gameLoop() {
         //este metodo gobierna el redibujado de los objetos en el jPanel1
         //primero borro todo lo que hay en el buffer
-        Graphics2D g2 = (Graphics2D) buffer.getGraphics();
+        g2 = (Graphics2D) buffer.getGraphics();
         g2.setColor(Color.BLACK);
         g2.fillRect(0, 0, SCREENWIDTH, SCREENHEIGHT);
         counter++;
@@ -155,16 +166,16 @@ public class gameWindow extends javax.swing.JFrame {
     private void checkCollision() {
         Rectangle2D.Double alienRectangle = new Rectangle2D.Double();
         Rectangle2D.Double blasterRectangle = new Rectangle2D.Double();
-
+        Rectangle2D.Double shipRectangle = new Rectangle2D.Double();
         for (int k = 0; k < blastList.size(); k++) {
             blasterRectangle.setFrame(blastList.get(k).posX, blastList.get(k).posY, blastList.get(k).image.getWidth(null), blastList.get(k).image.getHeight(null));
-
             for (int i = 0; i < xWingRows; i++) {
                 for (int j = 0; j < xWingColumns; j++) {
                     alienRectangle.setFrame(xWingList[i][j].posX, xWingList[i][j].posY,
                             xWingList[i][j].image1.getWidth(null),
                             xWingList[i][j].image1.getWidth(null));
                     if (blasterRectangle.intersects(alienRectangle)) {
+                        destroyedShips++;
                         Explosion e = new Explosion();
                         e.posX = xWingList[i][j].posX;
                         e.posY = xWingList[i][j].posY;
@@ -175,6 +186,36 @@ public class gameWindow extends javax.swing.JFrame {
 
                         xWingList[i][j].posY = 2000;
                         blastList.remove(k);
+                        if (destroyedShips == xWingRows * xWingColumns) {
+                            timer.stop();
+
+                            try {
+                                g2.drawImage(ImageIO.read(getClass().getResource("/img/gameOver.jpg")), 0, 0, SCREENWIDTH, SCREENHEIGHT, null);
+                            } catch (IOException ex) {
+
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+        for (int i = 0; i < xWingRows; i++) {
+            for (int j = 0; j < xWingColumns; j++) {
+                alienRectangle.setFrame(xWingList[i][j].posX, xWingList[i][j].posY,
+                        xWingList[i][j].image1.getWidth(null),
+                        xWingList[i][j].image1.getWidth(null));
+                shipRectangle.setFrame(myTieFighter.posX,
+                        myTieFighter.posY,
+                        myTieFighter.image.getWidth(null),
+                        myTieFighter.image.getHeight(null));
+                if (shipRectangle.intersects(alienRectangle)) {
+
+                    timer.stop();
+                    try {
+                        g2.drawImage(ImageIO.read(getClass().getResource("/img/gameOver.jpg")), 0, 0, SCREENWIDTH, SCREENHEIGHT, null);
+                    } catch (IOException ex) {
                     }
                 }
             }
@@ -257,22 +298,24 @@ public class gameWindow extends javax.swing.JFrame {
 
     private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
         switch (evt.getKeyCode()) {
-            case KeyEvent.VK_LEFT:  
+            case KeyEvent.VK_LEFT:
                 myTieFighter.setLeftPressed(true);
                 break;
             case KeyEvent.VK_RIGHT:
                 myTieFighter.setRightPressed(true);
                 break;
             case KeyEvent.VK_SPACE:
-                if(keyReleased==true){
-                Blast b = new Blast();
-                b.blastPosition(myTieFighter);
-                //agregamos el disparo a la lista de disparos
-                blastList.add(b);
-                keyReleased=false;
+                if (keyReleased == true) {
+                    Blast b = new Blast();
+                    b.blastPosition(myTieFighter);
+                    //agregamos el disparo a la lista de disparos
+                    blastList.add(b);
+                    blastSound s = new blastSound();
+                    s.start();
+                    keyReleased = false;
                 }
                 break;
-                
+
         }
     }//GEN-LAST:event_formKeyPressed
 
@@ -284,9 +327,9 @@ public class gameWindow extends javax.swing.JFrame {
             case KeyEvent.VK_RIGHT:
                 myTieFighter.setRightPressed(false);
                 break;
-             case KeyEvent.VK_SPACE:
-                keyReleased=true;
-                break; 
+            case KeyEvent.VK_SPACE:
+                keyReleased = true;
+                break;
         }
     }//GEN-LAST:event_formKeyReleased
 
